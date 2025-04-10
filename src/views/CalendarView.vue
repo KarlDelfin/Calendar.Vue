@@ -1,19 +1,16 @@
 <template>
-  <div class="m-3">
-    <div>
-      <el-button @click="this.$router.push('/home')">Back</el-button>
-    </div>
-    <div class="d-flex justify-content-between mt-3">
+  <el-main>
+    <el-card class="menuCard">
       <div>
-        <h3>Calendar</h3>
+        <el-button @click="this.$router.push('/home')">Back</el-button>
       </div>
-      <div>
+      <div class="d-flex justify-content-between mt-3">
+        <h4>Calendar</h4>
+
         <el-button type="primary" @click="openForm('Create Calendar', [])"
           >Create Calendar</el-button
         >
       </div>
-    </div>
-    <el-card>
       <el-scrollbar height="500px">
         <div v-if="calendars.length == 0">
           <el-empty description="No Data" />
@@ -60,9 +57,9 @@
         @current-change="getCalendarByUserId"
       />
     </el-card>
-  </div>
+  </el-main>
 
-  <el-dialog title="Shared Users" v-model="dialog.sharedCalendar">
+  <el-dialog title="Shared Users" center v-model="dialog.sharedCalendar">
     <el-collapse accordion>
       <el-collapse-item title="Filter Results" name="1">
         <el-form @submit.prevent="">
@@ -176,10 +173,14 @@ export default {
           }
           axios
             .post(`${api}/SharedCalendar`, payload)
-            .then(() => {
-              loading.close()
-              ElMessage.success('User grant successfully')
-              this.clear()
+            .then((response) => {
+              if (response.data == 'success') {
+                loading.close()
+                ElMessage.success('User grant successfully')
+                this.clear()
+              } else {
+                ElMessage.error(response.data)
+              }
             })
             .catch((e) => {
               loading.close()
@@ -204,10 +205,14 @@ export default {
           })
           axios
             .delete(`${api}/SharedCalendar/${sharedCalendarId}`)
-            .then(() => {
-              loading.close()
-              ElMessage.success('User revoked successfully')
-              this.clear()
+            .then((response) => {
+              if (response.data == 'success') {
+                loading.close()
+                ElMessage.success('User revoked successfully')
+                this.clear()
+              } else {
+                ElMessage.error(response.data)
+              }
             })
             .catch((e) => {
               loading.close()
@@ -233,6 +238,9 @@ export default {
           this.sharedUsers = response.data.results
           this.sharedCalendarPagination.totalElements = response.data.totalElements
         })
+        .catch((e) => {
+          ElMessage.error(e)
+        })
     },
     openForm(title, data) {
       this.title = title
@@ -254,12 +262,16 @@ export default {
         .then(() => {
           axios
             .delete(`${api}/Calendar/${calendarId}`)
-            .then(() => {
-              ElMessage.success('Calendar deleted successfully')
-              this.getCalendarByUserId(this.user.userId)
+            .then((response) => {
+              if (response.data == 'success') {
+                ElMessage.success('Calendar deleted successfully')
+                this.getCalendarByUserId(this.user.userId)
+              } else {
+                ElMessage.error(response.data)
+              }
             })
-            .catch((error) => {
-              ElMessage.error(error.response.data)
+            .catch((e) => {
+              ElMessage.error(e)
             })
         })
         // CANCEL
@@ -280,8 +292,8 @@ export default {
           this.calendarPagination.totalElements = response.data.totalElements
           loading.close()
         })
-        .catch((error) => {
-          console.log(error)
+        .catch((e) => {
+          ElMessage.error(e)
         })
     },
   },
@@ -296,3 +308,11 @@ export default {
   },
 }
 </script>
+
+<style>
+.menuCard {
+  min-height: 70vh;
+  max-height: calc(92vh - 32px);
+  overflow: hidden;
+}
+</style>

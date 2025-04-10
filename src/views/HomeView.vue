@@ -23,12 +23,22 @@
                 @change="getCalendarEvent"
                 placeholder="Calendar"
               >
-                <el-option
-                  v-for="calendar in calendars"
-                  :key="calendar.calendarId"
-                  :label="calendar.calendarName"
-                  :value="calendar.calendarId"
-                />
+                <el-option-group v-if="calendars.length > 0" label="My Calendars">
+                  <el-option
+                    v-for="calendar in calendars"
+                    :key="calendar.calendarId"
+                    :label="calendar.calendarName"
+                    :value="calendar.calendarId"
+                  />
+                </el-option-group>
+                <el-option-group v-if="sharedCalendars.length > 0" label="Shared Calendars">
+                  <el-option
+                    v-for="sharedCalendar in sharedCalendars"
+                    :key="sharedCalendar.calendarId"
+                    :label="sharedCalendar.calendarName"
+                    :value="sharedCalendar.calendarId"
+                  />
+                </el-option-group>
               </el-select>
             </div>
             <div class="col-1">
@@ -131,7 +141,7 @@
         {{ formatDateTime(calendarEvent.dateTimeEnded) }}
       </div>
 
-      <template #footer>
+      <template v-if="isCalendarOwner" #footer>
         <div class="dialog-footer d-flex justify-content-end">
           <el-button @click="openForm('Open Calendar Event')"> Edit </el-button>
           <el-button type="danger" @click="deleteCalendarEvent()"> Delete </el-button>
@@ -185,6 +195,7 @@ export default {
   },
   data() {
     return {
+      isCalendarOwner: false,
       isErrorFullCalendar: false,
       calendarEvent: {},
       calendarEventId: '',
@@ -199,6 +210,7 @@ export default {
         isRecurring: false,
       },
       calendars: [],
+      sharedCalendars: [],
       calendarEvents: [],
       calendarPagination: {
         currentPage: 1,
@@ -706,16 +718,22 @@ export default {
 
     // HANDLE DATE RANGE
     handleDateRange(info) {
-      let dateEnded = new Date(info.endStr)
-      dateEnded.setDate(dateEnded.getDate() - 1)
-      this.title = 'Create Event'
-      this.dialog.calendarEventForm = true
-      this.form.dateRange = {
-        weekClicked: this.weekClicked,
-        dayClicked: this.dayClicked,
-        calendarId: this.form.calendarId,
-        start: info.startStr,
-        end: dateEnded,
+      if (!this.isCalendarOwner) {
+        this.getCalendarEvent()
+        ElMessage.warning('Only CALENDAR OWNER can edit this calendar')
+        return
+      } else {
+        let dateEnded = new Date(info.endStr)
+        dateEnded.setDate(dateEnded.getDate() - 1)
+        this.title = 'Create Event'
+        this.dialog.calendarEventForm = true
+        this.form.dateRange = {
+          weekClicked: this.weekClicked,
+          dayClicked: this.dayClicked,
+          calendarId: this.form.calendarId,
+          start: info.startStr,
+          end: dateEnded,
+        }
       }
     },
 
@@ -727,8 +745,28 @@ export default {
         )
         .then((response) => {
           this.calendars = response.data.results
+          if (this.user.userId == response.data.results[0].userId) {
+            this.isCalendarOwner = true
+          } else {
+            this.isCalendarOwner = false
+          }
           this.form.calendarId = response.data.results[0].calendarId
           this.calendarPagination.totalElements = response.data.totalElements
+        })
+    },
+
+    getSharedCalendarByUserId() {
+      axios
+        .get(
+          `${api}/SharedCalendar/User/${this.user.userId}?currentPage=${this.calendarPagination.currentPage}&elementsPerPage=${this.calendarPagination.elementsPerPage}`,
+        )
+        .then((response) => {
+          if (this.user.userId == response.data.results[0].ownerUserId) {
+            this.isCalendarOwner = true
+          } else {
+            this.isCalendarOwner = false
+          }
+          this.sharedCalendars = response.data.results
         })
     },
 
@@ -763,6 +801,7 @@ export default {
                 dateTimeEnded: event.dateTimeEnded, // use in extendedProps
                 dateTimeStarted: event.dateTimeStarted, // use in extendedProps
                 calendarEventGroupId: event.calendarEventGroupId, // use in extendedProps
+                userId: event.userId, // use in extendedProps
 
                 allDay:
                   this.weekClicked || this.dayClicked
@@ -796,6 +835,10 @@ export default {
     },
     // EVENT CLICK
     eventClick(info) {
+      // if (this.user.userId != info.event.extendedProps.userId) {
+      // } else {
+      // }
+
       this.calendarEventId = info.event.id
       this.calendarEventGroupId = info.event.extendedProps.calendarEventGroupId
       // NON-RECURRING
@@ -871,48 +914,56 @@ export default {
     },
     // MOVE / RESIZE EVENT
     moveResizeEvent(info) {
-      let dateTimeStarted = ''
-      let dateTimeEnded = ''
-      let calendarEventId = info.event.id
-      // MONTH LOGIC
-      if (this.weekClicked == false && this.dayClicked == false) {
-        let startDate = info.event.startStr.substr(0, 10)
-        let endDate = info.event.endStr.substr(0, 10)
-        let startTime = info.event.extendedProps.dateTimeStarted.substr(11, 19)
-        let endTime = info.event.extendedProps.dateTimeEnded.substr(11, 19)
-        dateTimeStarted = `${startDate}T${startTime}`
-        dateTimeEnded = `${endDate}T${endTime}`
-      }
-      // WEEK/DAY LOGIC
-      if (this.weekClicked == true || this.dayClicked == true) {
-        dateTimeStarted = info.event.startStr
-        dateTimeEnded = info.event.endStr
-      }
+      if (!this.isCalendarOwner) {
+        this.getCalendarEvent()
+        ElMessage.warning('Only CALENDAR OWNER can edit this calendar')
+      } else {
+        let dateTimeStarted = ''
+        let dateTimeEnded = ''
+        let calendarEventId = info.event.id
+        // MONTH LOGIC
+        if (this.weekClicked == false && this.dayClicked == false) {
+          let startDate = info.event.startStr.substr(0, 10)
+          let endDate = info.event.endStr.substr(0, 10)
+          let startTime = info.event.extendedProps.dateTimeStarted.substr(11, 19)
+          let endTime = info.event.extendedProps.dateTimeEnded.substr(11, 19)
+          dateTimeStarted = `${startDate}T${startTime}`
+          dateTimeEnded = `${endDate}T${endTime}`
+        }
+        // WEEK/DAY LOGIC
+        if (this.weekClicked == true || this.dayClicked == true) {
+          dateTimeStarted = info.event.startStr
+          dateTimeEnded = info.event.endStr
+        }
 
-      const payload = {
-        dateTimeStarted: dateTimeStarted,
-        dateTimeEnded: dateTimeEnded,
-      }
-      ElMessageBox.confirm('Do you want to update this event?', 'Warning', {
-        confirmButtonText: 'Confirm',
-        cancelButtonText: 'Cancel',
-        type: 'warning',
-      })
-        // CONFIRM
-        .then(() => {
-          axios
-            .put(`${api}/CalendarEvent/${calendarEventId}`, payload)
-            .then(() => {
-              ElMessage.success('Event updated successfully')
-              this.getCalendarByUserId()
-              this.clear()
-            })
-            .catch((error) => {
-              ElMessage.error(error)
-            })
+        const payload = {
+          dateTimeStarted: dateTimeStarted,
+          dateTimeEnded: dateTimeEnded,
+        }
+        ElMessageBox.confirm('Do you want to update this event?', 'Warning', {
+          confirmButtonText: 'Confirm',
+          cancelButtonText: 'Cancel',
+          type: 'warning',
         })
-        // CANCEL
-        .catch(() => {})
+          // CONFIRM
+          .then(() => {
+            axios
+              .put(`${api}/CalendarEvent/${calendarEventId}`, payload)
+              .then(() => {
+                ElMessage.success('Event updated successfully')
+                this.getCalendarByUserId()
+                this.clear()
+              })
+              .catch((error) => {
+                ElMessage.error(error)
+              })
+          })
+          // CANCEL
+          .catch(() => {
+            this.getCalendarByUserId()
+            this.getSharedCalendarByUserId()
+          })
+      }
     },
     formatDateTime(dateTime) {
       if (!dateTime) {
@@ -951,9 +1002,11 @@ export default {
     if (this.user == null) {
       window.location.replace('/')
     }
+
+    this.getSharedCalendarByUserId()
     this.getCalendarByUserId()
+
     this.getCalendarEvent()
-    console.log(this.user)
   },
 }
 </script>

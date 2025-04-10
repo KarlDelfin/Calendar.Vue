@@ -332,13 +332,17 @@ export default {
 
         axios
           .post(`${api}/CalendarEvent`, calendarEvents)
-          .then(() => {
-            this.clear()
-            this.$emit('refresh')
-            ElMessage.success('Event added successfully')
+          .then((response) => {
+            if (response.data == 'success') {
+              ElMessage.success('Event added successfully')
+              this.clear()
+              this.$emit('refresh')
+            } else {
+              ElMessage.error(response.data)
+            }
           })
-          .catch((error) => {
-            ElMessage.error(error)
+          .catch((e) => {
+            ElMessage.error(e)
           })
         return
       }
@@ -417,10 +421,14 @@ export default {
           `${api}/CalendarEvent?calendarEventId=${this.calendarEventId}&calendarEventGroupId=${this.calendarEventGroupId}&actionStatus=${this.actionStatus}`,
           calendarEvents,
         )
-        .then(() => {
-          this.clear()
-          this.$emit('refresh')
-          ElMessage.success('Event updated successfully')
+        .then((response) => {
+          if (response.data == 'success') {
+            this.clear()
+            this.$emit('refresh')
+            ElMessage.success('Event updated successfully')
+          } else {
+            ElMessage.error(response.data)
+          }
         })
         .catch((error) => {
           ElMessage.error(error)

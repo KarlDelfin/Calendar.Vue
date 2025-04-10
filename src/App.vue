@@ -5,14 +5,16 @@
   >
     <el-menu class="el-menu-demo d-flex justify-content-end" mode="horizontal">
       <el-sub-menu index="2">
-        <template #title>Profile</template>
-        <el-menu-item v-if="$route.path == '/home'" @click="$router.push('/user')"
+        <template #title>Hi! {{ `${user.firstName} ${user.lastName}` }}</template>
+        <el-menu-item v-if="user.roleLevel == 1" @click="$router.push('/user')"
           ><i class="bi bi-people me-1"></i> Users</el-menu-item
         >
-        <el-menu-item v-if="$route.path == '/user'" @click="$router.push('/home')"
+        <el-menu-item @click="$router.push('/home')"
           ><i class="bi bi-house me-1"></i> Home</el-menu-item
         >
-        <el-menu-item @click="logout"><i class="bi bi-power me-1"></i> Logout</el-menu-item>
+        <el-menu-item @click="logout" class="text-danger"
+          ><i class="bi bi-power me-1"></i> Logout</el-menu-item
+        >
       </el-sub-menu>
     </el-menu></el-header
   >

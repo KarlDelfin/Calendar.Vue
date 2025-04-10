@@ -53,7 +53,7 @@ export default {
         password: this.form.password,
       }
       axios
-        .post(`${api}/UserAssignment/Login`, payload)
+        .post(`${api}/User/Login`, payload)
         .then((response) => {
           if (response == null) {
             ElMessage.error('Invalid Email or Password')
@@ -61,16 +61,15 @@ export default {
             this.form.password = ''
           } else {
             localStorage.setItem('user', JSON.stringify(response.data))
-            // this.$router.push('/home')
             window.location.replace('/home')
           }
           loading.close()
         })
         .catch((error) => {
-          ElMessage.error(error.response.data)
+          loading.close()
           this.form.email = ''
           this.form.password = ''
-          loading.close()
+          ElMessage.error(error.response.data)
         })
     },
   },

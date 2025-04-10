@@ -134,7 +134,7 @@ export default {
         formData.append('image', file)
       })
       axios
-        .post(`${api}/UserAssignment`, formData)
+        .post(`${api}/User`, formData)
         .then((response) => {
           if (response.data == 'success') {
             ElMessage.success('Account created successfully')

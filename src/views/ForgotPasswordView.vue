@@ -101,7 +101,7 @@ export default {
         return
       }
       axios
-        .get(`${api}/UserAssignment/Email/${this.email}`)
+        .get(`${api}/User/Email/${this.email}`)
         .then((response) => {
           this.email = response.data.email
           this.isVerifyCode = true
@@ -109,9 +109,9 @@ export default {
           loading.close()
           ElMessage.success('Verification code sent successfully')
         })
-        .catch((error) => {
+        .catch((e) => {
           loading.close()
-          ElMessage.error(error)
+          ElMessage.error(e)
           this.email = ''
         })
     },
@@ -123,7 +123,7 @@ export default {
       })
 
       axios
-        .get(`${api}/UserAssignment/Email/${this.email}/VerificationCode/${this.code}`)
+        .get(`${api}/User/Email/${this.email}/VerificationCode/${this.code}`)
         .then((response) => {
           if (this.code != response.data.verificationCode) {
             ElMessage.error('Invalid verification code!')
@@ -162,7 +162,7 @@ export default {
       }
 
       axios
-        .put(`${api}/UserAssignment/Email/${this.email}/Password/${this.password}`)
+        .put(`${api}/User/Email/${this.email}/Password/${this.password}`)
         .then((response) => {
           if (response.data == 'success') {
             loading.close()
@@ -172,6 +172,10 @@ export default {
               window.location.replace('/')
             }, 500)
           }
+        })
+        .catch((e) => {
+          loading.close()
+          ElMessage.error(e)
         })
     },
   },
