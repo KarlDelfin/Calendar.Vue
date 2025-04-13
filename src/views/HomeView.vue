@@ -184,7 +184,8 @@ import timeGridPlugin from '@fullcalendar/timegrid'
 import list from '@fullcalendar/list'
 import CalendarForm from '@/components/CalendarForm.vue'
 import CalendarEventForm from '@/components/CalendarEventForm.vue'
-const api = import.meta.env.VITE_APP_API_URL
+// const api = import.meta.env.VITE_APP_API_URL
+const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 import * as bootstrap from 'bootstrap'
 import { ElMessage, ElLoading, ElMessageBox } from 'element-plus'
 export default {

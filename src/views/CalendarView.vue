@@ -122,7 +122,8 @@
 import axios from 'axios'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import CalendarForm from '../components/CalendarForm.vue'
-const api = import.meta.env.VITE_APP_API_URL
+// const api = import.meta.env.VITE_APP_API_URL
+const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 export default {
   components: { CalendarForm },
   data() {

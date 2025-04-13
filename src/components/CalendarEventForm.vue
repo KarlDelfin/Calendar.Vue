@@ -122,7 +122,8 @@
 <script>
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
-const api = import.meta.env.VITE_APP_API_URL
+// const api = import.meta.env.VITE_APP_API_URL
+const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 import { v4 as uuidv4 } from 'uuid'
 
 export default {
