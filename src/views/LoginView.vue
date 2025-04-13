@@ -54,7 +54,7 @@ export default {
       }
       axios
         .post(
-          `https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/User/Login`,
+          `https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api/User/Login`,
           payload,
         )
         .then((response) => {
