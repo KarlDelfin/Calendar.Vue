@@ -31,7 +31,7 @@
 <script>
 import axios from 'axios'
 import { ElMessage, ElLoading } from 'element-plus'
-// const api = import.meta.env.VITE_APP_API_URL
+const api = import.meta.env.VITE_APP_API_URL
 export default {
   data() {
     return {
@@ -53,10 +53,7 @@ export default {
         password: this.form.password,
       }
       axios
-        .post(
-          `https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api/User/Login`,
-          payload,
-        )
+        .post(`${api}/User/Login`, payload)
         .then((response) => {
           if (response == null) {
             ElMessage.error('Invalid Email or Password')
