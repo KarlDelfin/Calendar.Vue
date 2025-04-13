@@ -140,7 +140,7 @@ export default {
           if (response.data == 'success') {
             ElMessage.success('Account created successfully')
             this.clear()
-            window.location.replace('/')
+            this.$router.push('/')
           } else {
             setTimeout(() => {
               loading.close()
@@ -194,7 +194,7 @@ export default {
 
   mounted() {
     if (localStorage.getItem('user') != null) {
-      window.location.replace('/home')
+      this.$router.push('/home')
     }
     console.log(this.$route.path)
   },

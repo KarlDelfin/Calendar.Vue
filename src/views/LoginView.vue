@@ -62,7 +62,7 @@ export default {
             this.form.password = ''
           } else {
             localStorage.setItem('user', JSON.stringify(response.data))
-            window.location.replace('/home')
+            this.$router.push('/home')
           }
           loading.close()
         })
@@ -77,7 +77,7 @@ export default {
 
   mounted() {
     if (localStorage.getItem('user') != null) {
-      window.location.replace('/home')
+      this.$router.push('/home')
     }
   },
 }

@@ -1001,7 +1001,7 @@ export default {
     this.calendarApi = this.$refs.refCalendar.getApi()
     this.user = JSON.parse(localStorage.getItem('user'))
     if (this.user == null) {
-      window.location.replace('/')
+      this.$router.push('/')
     }
 
     this.getSharedCalendarByUserId()

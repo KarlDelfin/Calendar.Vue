@@ -270,7 +270,7 @@ export default {
   mounted() {
     this.user = JSON.parse(localStorage.getItem('user'))
     if (this.user == null) {
-      window.location.replace('/')
+      this.$router.push('/')
     }
     this.getUserAssignments()
   },

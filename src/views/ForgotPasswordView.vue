@@ -170,7 +170,7 @@ export default {
 
             ElMessage.success('Password reset successfully')
             setTimeout(() => {
-              window.location.replace('/')
+              this.$router.push('/')
             }, 500)
           }
         })
@@ -183,7 +183,7 @@ export default {
 
   mounted() {
     if (localStorage.getItem('user') != null) {
-      window.location.replace('/home')
+      this.$router.push('/home')
     }
   },
 }
