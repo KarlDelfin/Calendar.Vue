@@ -12,7 +12,7 @@
         </el-form-item>
       </el-form>
       <div class="d-flex justify-content-end">
-        <el-button type="primary" class="w-100" @click="sendCode">Login</el-button>
+        <el-button type="primary" class="w-100" @click="sendCode">Send</el-button>
       </div>
       <div class="d-flex justify-content-center mt-3 mb-2">
         <el-button type="primary" link @click="$router.push('/')">Back to Login</el-button>
@@ -32,7 +32,7 @@
         </el-form-item>
       </el-form>
       <div class="d-flex justify-content-end">
-        <el-button type="primary" class="w-100" @click="verifyCode">Verify Code</el-button>
+        <el-button type="primary" class="w-100" @click="verifyCode">Verify</el-button>
       </div>
       <div class="d-flex justify-content-center mt-3 mb-2">
         <el-button type="primary" link @click="$router.push('/')">Back to Login</el-button>
@@ -88,26 +88,44 @@ export default {
     }
   },
   methods: {
+    // SEND CODE
     sendCode() {
+      const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       const loading = ElLoading.service({
         lock: true,
         text: 'Loading',
         background: 'rgba(0, 0, 0, 0.7)',
       })
+
+      // CHECK INPUT FIELD
       if (this.email == '') {
         setTimeout(() => {
           loading.close()
         }, 500),
-          ElMessage.error('Please input email address!')
+          ElMessage.warning('Please input email address')
+        return
+      }
+
+      // CHECK EMAIL ADDRESS
+      if (!pattern.test(this.email)) {
+        setTimeout(() => {
+          loading.close()
+        }, 500),
+          ElMessage.warning('Please input valid email address')
         return
       }
       axios
         .get(`${api}/User/Email/${this.email}`)
         .then((response) => {
+          if (response.data == 'Failed to send verification code') {
+            loading.close()
+            ElMessage.warning('Email address not registered')
+            return
+          }
+          loading.close()
           this.email = response.data.email
           this.isVerifyCode = true
           this.isResetPassword = false
-          loading.close()
           ElMessage.success('Verification code sent successfully')
         })
         .catch((e) => {
@@ -116,6 +134,8 @@ export default {
           this.email = ''
         })
     },
+
+    // VERIFY CODE
     verifyCode() {
       const loading = ElLoading.service({
         lock: true,
@@ -127,38 +147,45 @@ export default {
         .get(`${api}/User/Email/${this.email}/VerificationCode/${this.code}`)
         .then((response) => {
           if (this.code != response.data.verificationCode) {
-            ElMessage.error('Invalid verification code!')
             loading.close()
+            ElMessage.warning('Invalid verification code')
             return
           }
+          ElMessage.success('Code verified')
           this.isVerifyCode = false
           this.isResetPassword = true
           loading.close()
         })
-        .catch((error) => {
+        .catch(() => {
           loading.close()
-          ElMessage.error(error)
+          ElMessage.warning('Invalid verification code')
           this.code = ''
         })
     },
+
+    // RESET PASSWORD
     resetPassword() {
       const loading = ElLoading.service({
         lock: true,
         text: 'Loading',
         background: 'rgba(0, 0, 0, 0.7)',
       })
+
+      // CHECK INPUT FIELDS
       if (this.password == '' || this.confirmPassword == '') {
         setTimeout(() => {
           loading.close()
         }, 500),
-          ElMessage.error('Please input fields!')
+          ElMessage.warning('Please input fields!')
         return
       }
+
+      // CHECK PASSWORD
       if (this.password != this.confirmPassword) {
         setTimeout(() => {
           loading.close()
         }, 500),
-          ElMessage.error('Password not match!')
+          ElMessage.warning('Password not match!')
         return
       }
 
@@ -167,8 +194,7 @@ export default {
         .then((response) => {
           if (response.data == 'success') {
             loading.close()
-
-            ElMessage.success('Password reset successfully')
+            ElMessage.success('Password updated successfully')
             setTimeout(() => {
               this.$router.push('/')
             }, 500)

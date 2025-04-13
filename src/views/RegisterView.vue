@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex justify-content-center align-items-center background">
-    <div class="shadow col-sm-4 p-4 rounded bg-white w-50">
+    <div class="shadow col-sm-4 p-4 rounded bg-white">
       <h2 class="text-center">Register</h2>
       <el-form class="mt-4" label-position="top" @submit.prevent="register">
         <div class="d-flex justify-content-center">
@@ -57,7 +57,7 @@
 
   <!-- Image Preview Dialog -->
   <el-dialog v-model="dialog.previewImage" :before-close="clear">
-    <div class="content-center">
+    <div class="d-flex justify-content-center">
       <div>
         <img :src="previewImg" style="width: 300px" />
       </div>
@@ -88,6 +88,7 @@ export default {
     }
   },
   methods: {
+    // CLEAR
     clear() {
       this.dialog.previewImage = false
       this.previewImage = null
@@ -99,12 +100,26 @@ export default {
       this.fileList = []
       this.file = []
     },
+
+    // REGISTER
     register() {
+      const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
       const loading = ElLoading.service({
         lock: true,
         text: 'Loading',
         background: 'rgba(0, 0, 0, 0.7)',
       })
+
+      // CHECK IMAGE
+      if (this.file.length == 0) {
+        setTimeout(() => {
+          loading.close()
+        }, 500)
+        ElMessage.warning('Please select image')
+        return
+      }
+
+      // CHECK INPUT FIELDS
       if (
         this.form.firstName == '' ||
         this.form.lastName == '' ||
@@ -115,14 +130,25 @@ export default {
         setTimeout(() => {
           loading.close()
         }, 500)
-        ElMessage.error('Please input fields!')
+        ElMessage.warning('Please input fields')
         return
       }
+
+      // CHECK EMAIL
+      if (!pattern.test(this.form.email)) {
+        setTimeout(() => {
+          loading.close()
+        }, 500)
+        ElMessage.warning('Please input valid email address')
+        return
+      }
+
+      // CHECK PASSWORD MATCH
       if (this.form.password != this.form.confirmPassword) {
         setTimeout(() => {
           loading.close()
         }, 500)
-        ElMessage.error('Password not match!')
+        ElMessage.warning('Password not match')
         return
       }
 
@@ -138,6 +164,7 @@ export default {
         .post(`${api}/User`, formData)
         .then((response) => {
           if (response.data == 'success') {
+            loading.close()
             ElMessage.success('Account created successfully')
             this.clear()
             this.$router.push('/')
@@ -146,18 +173,20 @@ export default {
               loading.close()
             }, 500)
 
-            ElMessage.error(response.data)
             loading.close()
+            ElMessage.error(response.data)
           }
         })
-        .catch((error) => {
+        .catch((e) => {
           setTimeout(() => {
             loading.close()
           }, 500)
           this.clear()
-          ElMessage.error(error)
+          ElMessage.error(e)
         })
     },
+
+    // ON EXCEED FILE SIZE
     onExceed(files) {
       this.$refs.uploader.clearFiles()
       this.$refs.uploader.handleStart(files[0])
@@ -196,7 +225,6 @@ export default {
     if (localStorage.getItem('user') != null) {
       this.$router.push('/home')
     }
-    console.log(this.$route.path)
   },
 }
 </script>

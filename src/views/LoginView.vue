@@ -16,7 +16,7 @@
         </el-form-item>
       </el-form>
       <div class="d-flex justify-content-end">
-        <el-button type="primary" class="w-100" @click="login">Login</el-button>
+        <el-button type="primary" class="w-100" @click="login">Calendar</el-button>
       </div>
       <div class="d-flex justify-content-center mt-3 mb-2">
         <el-button type="primary" link @click="$router.push('/register')">Register</el-button>

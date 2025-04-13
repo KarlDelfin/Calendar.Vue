@@ -224,7 +224,6 @@ export default {
         .catch(() => {})
     },
     clear() {
-      console.log('CLEAR')
       this.searchUser = ''
       this.viewUsers(this.calendarId)
     },
@@ -301,7 +300,6 @@ export default {
 
   mounted() {
     this.user = JSON.parse(localStorage.getItem('user'))
-    console.log(this.user)
     if (this.user == null) {
       this.$router.push('/')
     }
