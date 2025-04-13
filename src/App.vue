@@ -38,7 +38,9 @@ export default {
     },
   },
   mounted() {
-    this.user = JSON.parse(localStorage.getItem('user'))
+    setTimeout(() => {
+      this.user = JSON.parse(localStorage.getItem('user'))
+    }, 500)
   },
 }
 </script>

@@ -62,7 +62,7 @@ export default {
             this.form.password = ''
           } else {
             localStorage.setItem('user', JSON.stringify(response.data))
-            this.$router.push('/home')
+            window.location.replace('/home')
           }
           loading.close()
         })
