@@ -5,6 +5,7 @@
       <el-form class="mt-4" label-position="top" @submit.prevent="register">
         <div class="d-flex justify-content-center">
           <el-upload
+            drag
             ref="uploader"
             v-model:file-list="fileList"
             action="getUploadTrigger"
@@ -19,7 +20,8 @@
             :on-exceed="onExceed"
             class="mb-4"
           >
-            <i class="bi bi-plus"></i>
+            <i class="bi bi-cloud-arrow-up-fill fs-3"></i>
+            <div class="el-upload__text">Drop file here or <em>click to upload</em></div>
           </el-upload>
         </div>
         <el-form-item>
@@ -241,5 +243,13 @@ export default {
 
 .el-upload el-upload--picture-card {
   display: none;
+}
+
+.el-upload-dragger {
+  height: 100%;
+}
+
+.bi-cloud-arrow-up-fill::before {
+  color: #606266;
 }
 </style>
