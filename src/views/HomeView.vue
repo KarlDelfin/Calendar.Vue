@@ -16,7 +16,7 @@
             :attributes="attributes"
           />
           <!-- START CALENDAR -->
-          <div class="row p-2">
+          <div class="row p-2 select_event">
             <div class="col-9">
               <el-select
                 v-model="form.calendarId"
@@ -1089,8 +1089,16 @@ main {
   }
 }
 @media only screen and (max-width: 800px) {
+  .el-dialog {
+    width: 100%;
+  }
+  main {
+    border-top: 1px solid var(--bs-border-color);
+  }
   .select_event {
     text-align: center;
+    display: flex;
+    justify-content: center;
   }
   .fc-header-toolbar {
     padding: 0 0 80px 0;
@@ -1112,7 +1120,7 @@ main {
   .fc-createEvent-button {
     position: absolute;
     right: 20px;
-    top: 84px;
+    top: 80px;
   }
   .fc .fc-button-group {
     display: inline-block;
@@ -1120,7 +1128,7 @@ main {
   .fc-button-group {
     margin: 0 auto !important;
     position: absolute !important;
-    bottom: -20px !important;
+    bottom: -25px !important;
   }
   .fc-button-group:nth-child(1) {
     left: 20px;
@@ -1141,9 +1149,11 @@ main {
     position: absolute !important;
   }
   .fc-button-group:nth-child(1) {
+    text-align: center;
     bottom: -25px !important;
   }
   .fc-button-group:nth-child(2) {
+    text-align: center;
     bottom: -70px !important;
   }
 }
