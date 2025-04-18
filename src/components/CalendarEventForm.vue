@@ -123,7 +123,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 // const api = import.meta.env.VITE_APP_API_URL
-const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
+// const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 import { v4 as uuidv4 } from 'uuid'
 
 export default {
@@ -236,7 +236,7 @@ export default {
         this.form.eventDescription == '' ||
         this.form.eventColor == ''
       ) {
-        ElMessage.info('Please input fields!')
+        ElMessage.warning('Please input fields!')
         return
       }
       let calendarEvents = []
@@ -332,7 +332,7 @@ export default {
         }
 
         axios
-          .post(`${api}/CalendarEvent`, calendarEvents)
+          .post(`${this.api}/CalendarEvent`, calendarEvents)
           .then((response) => {
             if (response.data == 'success') {
               ElMessage.success('Event added successfully')
@@ -347,8 +347,8 @@ export default {
           })
         return
       }
-      // UPDATE CALENDAR EVENT
 
+      // UPDATE CALENDAR EVENT
       if (this.calendarEventGroupId == null) {
         this.calendarEventGroupId = '00000000-0000-0000-0000-000000000000'
       }
@@ -419,7 +419,7 @@ export default {
 
       axios
         .put(
-          `${api}/CalendarEvent?calendarEventId=${this.calendarEventId}&calendarEventGroupId=${this.calendarEventGroupId}&actionStatus=${this.actionStatus}`,
+          `${this.api}/CalendarEvent?calendarEventId=${this.calendarEventId}&calendarEventGroupId=${this.calendarEventGroupId}&actionStatus=${this.actionStatus}`,
           calendarEvents,
         )
         .then((response) => {
@@ -436,6 +436,7 @@ export default {
         })
     },
   },
+
   watch: {
     openForm(val) {
       this.dialog.calendarEventForm = val

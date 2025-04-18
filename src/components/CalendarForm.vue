@@ -18,7 +18,7 @@
 import axios from 'axios'
 import { ElMessage, ElLoading } from 'element-plus'
 // const api = import.meta.env.VITE_APP_API_URL
-const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
+// const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 export default {
   props: {
     openForm: Boolean,
@@ -47,40 +47,41 @@ export default {
         background: 'rgba(0, 0, 0, 0.7)',
       })
 
+      // CREATE CALENDAR
       if (this.title == 'Create Calendar') {
         const payload = {
           userId: this.user.userId,
           calendarName: this.form.calendarName,
         }
         axios
-          .post(`${api}/Calendar`, payload)
+          .post(`${this.api}/Calendar`, payload)
           .then(() => {
+            loading.close()
             ElMessage.success('Calendar created successfully')
             this.clear()
             this.$emit('refresh')
-            loading.close()
           })
           .catch((error) => {
-            ElMessage.error(error.response.data)
             loading.close()
+            ElMessage.error(error.response.data)
           })
         return
       }
+
+      // EDIT CALENDAR
       if (this.title == 'Edit Calendar') {
         const payload = {
           calendarName: this.form.calendarName,
         }
-        axios
-          .put(`${api}/Calendar/${this.calendarId}`, payload)
-          .then(() => {
-            ElMessage.success('Calendar updated successfully')
-            this.clear()
-            loading.close()
-          })
-          .catch((error) => {
-            ElMessage.error(error.response.data)
-            loading.close()
-          })
+        axios.put(`${this.api}/Calendar/${this.calendarId}`, payload).then(() => {
+          loading.close()
+          ElMessage.success('Calendar updated successfully')
+          this.clear()
+        })
+        loading.close().catch((error) => {
+          loading.close()
+          ElMessage.error(error.response.data)
+        })
         return
       }
     },

@@ -17,5 +17,7 @@ app.component('VCalendar', Calendar)
 app.component('VDatePicker', DatePicker)
 app.use(ElementPlus)
 app.use(router)
-
+app.config.globalProperties.api = 'https://localhost:7095/api'
+// app.config.globalProperties.api =
+//   'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 app.mount('#app')

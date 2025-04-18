@@ -12,32 +12,36 @@
         >
       </div>
       <el-scrollbar height="500px">
+        <el-collapse accordion>
+          <el-collapse-item title="Filter Results" name="1">
+            <el-form @submit.prevent="">
+              <el-input placeholder="Search Calendar" v-model="searchCalendar" />
+              <div class="d-flex justify-content-end mt-2">
+                <el-button @click="clear"> Reset </el-button>
+                <el-button type="primary" @click="viewUsers"> Apply </el-button>
+              </div>
+            </el-form>
+          </el-collapse-item>
+        </el-collapse>
         <div v-if="calendars.length == 0">
           <el-empty description="No Data" />
         </div>
         <div v-else>
-          <el-collapse accordion>
-            <el-collapse-item title="Filter Results" name="1">
-              <el-form @submit.prevent="">
-                <el-input placeholder="Search Calendar" v-model="searchCalendar" />
-                <div class="d-flex justify-content-end mt-2">
-                  <el-button @click="clear"> Reset </el-button>
-                  <el-button type="primary" @click="viewUsers"> Apply </el-button>
-                </div>
-              </el-form>
-            </el-collapse-item>
-          </el-collapse>
           <el-table :data="calendars">
             <el-table-column label="Calendar Name" prop="calendarName" />
             <el-table-column label="Shared User" align="center">
               <template #default="scope">
-                <el-button @click="viewUsers(scope.row.calendarId)">View Users</el-button>
+                <el-button size="small" @click="viewUsers(scope.row.calendarId)"
+                  >View Users</el-button
+                >
               </template>
             </el-table-column>
             <el-table-column label="Operation" align="center">
               <template #default="scope">
-                <el-button @click="openForm('Edit Calendar', scope.row)">Edit</el-button>
-                <el-button type="danger" @click="deleteCalendar(scope.row.calendarId)"
+                <el-button size="small" @click="openForm('Edit Calendar', scope.row)"
+                  >Edit</el-button
+                >
+                <el-button size="small" type="danger" @click="deleteCalendar(scope.row.calendarId)"
                   >Delete</el-button
                 >
               </template>
@@ -123,7 +127,7 @@ import axios from 'axios'
 import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import CalendarForm from '../components/CalendarForm.vue'
 // const api = import.meta.env.VITE_APP_API_URL
-const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
+// const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 export default {
   components: { CalendarForm },
   data() {
@@ -173,7 +177,7 @@ export default {
             calendarId: this.calendarId,
           }
           axios
-            .post(`${api}/SharedCalendar`, payload)
+            .post(`${this.api}/SharedCalendar`, payload)
             .then((response) => {
               if (response.data == 'success') {
                 loading.close()
@@ -205,7 +209,7 @@ export default {
             background: 'rgba(0, 0, 0, 0.7)',
           })
           axios
-            .delete(`${api}/SharedCalendar/${sharedCalendarId}`)
+            .delete(`${this.api}/SharedCalendar/${sharedCalendarId}`)
             .then((response) => {
               if (response.data == 'success') {
                 loading.close()
@@ -231,7 +235,7 @@ export default {
       this.calendarId = calendarId
       axios
         .get(
-          `${api}/SharedCalendar/Calendar/${this.calendarId}?search=${this.searchUser}&currentPage=${this.sharedCalendarPagination.currentPage}&elementsPerPage=${this.sharedCalendarPagination.elementsPerPage}`,
+          `${this.api}/SharedCalendar/Calendar/${this.calendarId}?search=${this.searchUser}&currentPage=${this.sharedCalendarPagination.currentPage}&elementsPerPage=${this.sharedCalendarPagination.elementsPerPage}`,
         )
         .then((response) => {
           this.dialog.sharedCalendar = true
@@ -260,17 +264,25 @@ export default {
       })
         // CONFIRM
         .then(() => {
+          const loading = ElLoading.service({
+            lock: true,
+            text: 'Loading',
+            background: 'rgba(0, 0, 0, 0.7)',
+          })
           axios
-            .delete(`${api}/Calendar/${calendarId}`)
+            .delete(`${this.api}/Calendar/${calendarId}`)
             .then((response) => {
               if (response.data == 'success') {
+                loading.close()
                 ElMessage.success('Calendar deleted successfully')
                 this.getCalendarByUserId(this.user.userId)
               } else {
+                loading.close()
                 ElMessage.error(response.data)
               }
             })
             .catch((e) => {
+              loading.close()
               ElMessage.error(e)
             })
         })
@@ -285,14 +297,15 @@ export default {
       })
       axios
         .get(
-          `${api}/Calendar/User/${this.user.userId}?currentPage=${this.calendarPagination.currentPage}&elementsPerPage=${this.calendarPagination.elementsPerPage}`,
+          `${this.api}/Calendar/User/${this.user.userId}?currentPage=${this.calendarPagination.currentPage}&elementsPerPage=${this.calendarPagination.elementsPerPage}`,
         )
         .then((response) => {
+          loading.close()
           this.calendars = response.data.results
           this.calendarPagination.totalElements = response.data.totalElements
-          loading.close()
         })
         .catch((e) => {
+          loading.close()
           ElMessage.error(e)
         })
     },

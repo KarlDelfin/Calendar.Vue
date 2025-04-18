@@ -16,7 +16,7 @@
         </el-form-item>
       </el-form>
       <div class="d-flex justify-content-end">
-        <el-button type="primary" class="w-100" @click="login">Calendar</el-button>
+        <el-button type="primary" class="w-100" @click="login">Login</el-button>
       </div>
       <div class="d-flex justify-content-center mt-3 mb-2">
         <el-button type="primary" link @click="$router.push('/register')">Register</el-button>
@@ -32,7 +32,7 @@
 import axios from 'axios'
 import { ElMessage, ElLoading } from 'element-plus'
 // const api = import.meta.env.VITE_APP_API_URL
-const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
+// const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 export default {
   data() {
     return {
@@ -54,7 +54,7 @@ export default {
         password: this.form.password,
       }
       axios
-        .post(`${api}/User/Login`, payload)
+        .post(`${this.api}/User/Login`, payload)
         .then((response) => {
           if (response == null) {
             ElMessage.error('Invalid Email or Password')

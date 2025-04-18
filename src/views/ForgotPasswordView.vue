@@ -74,7 +74,7 @@
 import axios from 'axios'
 import { ElMessage, ElLoading } from 'element-plus'
 // const api = import.meta.env.VITE_APP_API_URL
-const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
+// const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 export default {
   data() {
     return {
@@ -115,7 +115,7 @@ export default {
         return
       }
       axios
-        .get(`${api}/User/Email/${this.email}`)
+        .get(`${this.api}/User/Email/${this.email}`)
         .then((response) => {
           if (response.data == 'Failed to send verification code') {
             loading.close()
@@ -144,7 +144,7 @@ export default {
       })
 
       axios
-        .get(`${api}/User/Email/${this.email}/VerificationCode/${this.code}`)
+        .get(`${this.api}/User/Email/${this.email}/VerificationCode/${this.code}`)
         .then((response) => {
           if (this.code != response.data.verificationCode) {
             loading.close()
@@ -190,7 +190,7 @@ export default {
       }
 
       axios
-        .put(`${api}/User/Email/${this.email}/Password/${this.password}`)
+        .put(`${this.api}/User/Email/${this.email}/Password/${this.password}`)
         .then((response) => {
           if (response.data == 'success') {
             loading.close()

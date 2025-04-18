@@ -69,7 +69,7 @@
 import axios from 'axios'
 import { ElMessage, ElLoading } from 'element-plus'
 // const api = import.meta.env.VITE_APP_API_URL
-const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
+// const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 export default {
   data() {
     return {
@@ -161,7 +161,7 @@ export default {
         formData.append('image', file)
       })
       axios
-        .post(`${api}/User`, formData)
+        .post(`${this.api}/User`, formData)
         .then((response) => {
           if (response.data == 'success') {
             loading.close()

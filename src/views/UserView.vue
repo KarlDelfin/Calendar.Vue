@@ -16,7 +16,7 @@
         <div v-else>
           <el-collapse accordion>
             <el-collapse-item title="Filter Results" name="1">
-              <el-form @submit.prevent="">
+              <el-form @submit.prevent="getUserAssignments">
                 <el-input placeholder="Search User" v-model="searchUser" />
                 <div class="d-flex justify-content-end mt-2">
                   <el-button @click="clearSearch"> Reset </el-button>
@@ -40,8 +40,9 @@
             <el-table-column label="Role" prop="roleName" />
             <el-table-column label="Operation" align="center">
               <template #default="scope">
-                <el-button @click="openForm('Edit User', scope.row)">Edit</el-button>
+                <el-button size="small" @click="openForm('Edit User', scope.row)">Edit</el-button>
                 <el-button
+                  size="small"
                   v-if="scope.row.isDisabled == false"
                   type="danger"
                   @click="disableUser(scope.row)"
@@ -107,7 +108,7 @@
 import axios from 'axios'
 import { ElMessage, ElLoading, ElMessageBox } from 'element-plus'
 // const api = import.meta.env.VITE_APP_API_URL
-const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
+// const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 export default {
   data() {
     return {
@@ -148,7 +149,7 @@ export default {
         roleId: this.form.roleId,
       }
       axios
-        .put(`${api}/UserAssignment/${this.userAssignmentId}`, payload)
+        .put(`${this.api}/UserAssignment/${this.userAssignmentId}`, payload)
         .then((response) => {
           if (response.data == 'success') {
             ElMessage.success('User Assignment updated successfully')
@@ -168,17 +169,21 @@ export default {
       if (e == undefined) {
         e = ''
       }
-      axios.get(`${api}/Role?search=${e}&currentPage=1&elementsPerPage=10`).then((response) => {
-        this.roles = response.data.results
-      })
+      axios
+        .get(`${this.api}/Role?search=${e}&currentPage=1&elementsPerPage=10`)
+        .then((response) => {
+          this.roles = response.data.results
+        })
     },
     getUsers(e) {
       if (e == undefined) {
         e = ''
       }
-      axios.get(`${api}/User?search=${e}&currentPage=1&elementsPerPage=10`).then((response) => {
-        this.users = response.data.results
-      })
+      axios
+        .get(`${this.api}/User?search=${e}&currentPage=1&elementsPerPage=10`)
+        .then((response) => {
+          this.users = response.data.results
+        })
     },
     openForm(title, data) {
       this.title = title
@@ -217,7 +222,7 @@ export default {
             background: 'rgba(0, 0, 0, 0.7)',
           })
           axios
-            .delete(`${api}/UserAssignment/${data.userAssignmentId}`)
+            .delete(`${this.api}/UserAssignment/${data.userAssignmentId}`)
             .then(() => {
               loading.close()
               this.getUserAssignments()
@@ -257,7 +262,7 @@ export default {
       })
       axios
         .get(
-          `${api}/UserAssignment?search=${this.searchUser}&currentPage=${this.userPagination.currentPage}&elementsPerPage=${this.userPagination.elementsPerPage}`,
+          `${this.api}/UserAssignment?search=${this.searchUser}&currentPage=${this.userPagination.currentPage}&elementsPerPage=${this.userPagination.elementsPerPage}`,
         )
         .then((response) => {
           loading.close()

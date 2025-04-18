@@ -1,11 +1,11 @@
 <template>
   <el-card>
     <el-container>
-      <el-container>
-        <el-aside class="sideMenu">
-          <div class="d-flex justify-content-center p-2">
-            <el-button @click="this.$router.push('/calendar')">Manage Calendar</el-button>
-          </div>
+      <el-aside class="sideMenu">
+        <div class="d-flex justify-content-center p-2">
+          <el-button @click="this.$router.push('/calendar')">Manage Calendar</el-button>
+        </div>
+        <div class="sidemenu_container">
           <!-- VCALENDAR -->
           <VCalendar
             :key="pickerKey"
@@ -20,7 +20,7 @@
             <div class="col-9">
               <el-select
                 v-model="form.calendarId"
-                @change="getCalendarEvent"
+                @change="getCalendarEvent()"
                 placeholder="Calendar"
               >
                 <el-option-group v-if="calendars.length > 0" label="My Calendars">
@@ -61,7 +61,7 @@
             />
           </div>
           <!-- SELECT ALL / SELECT NONE -->
-          <div class="row p-2">
+          <div class="row p-2 select_event">
             <div class="col">
               <el-button class="selectAllNone" size="small" @click="checkAllEvents"
                 >Select All</el-button
@@ -73,20 +73,20 @@
               >
             </div>
           </div>
-        </el-aside>
-        <el-main class="main">
-          <div class="shadow" style="min-height: 80vh" v-if="isErrorFullCalendar">
+        </div>
+      </el-aside>
+      <el-main class="main">
+        <!-- <div class="shadow" style="min-height: 80vh" v-if="isErrorFullCalendar">
             <el-empty>
               <el-button type="primary" @click="(getCalendarByUserId(), getCalendarEvent())"
                 >Refresh</el-button
               >
             </el-empty>
           </div>
-          <div v-else>
-            <FullCalendar class="fullCalendar" ref="refCalendar" :options="calendarOptions" />
-          </div>
-        </el-main>
-      </el-container>
+          <div v-else> -->
+        <FullCalendar class="fullCalendar" ref="refCalendar" :options="calendarOptions" />
+        <!-- </div> -->
+      </el-main>
     </el-container>
 
     <!-- START RECURRING EVENT CONFIMATION DIALOG -->
@@ -158,7 +158,7 @@
       :openForm="dialog.calendarEventForm"
       @close="dialog.calendarEventForm = false"
       :handleDateRange="form.dateRange"
-      @refresh="(getCalendarEvent(), (dialog.operation = false))"
+      @refresh="(clear(), getCalendarEvent())"
       :selectedDayList="selectedDays"
       :daysList="daysList"
     />
@@ -185,7 +185,7 @@ import list from '@fullcalendar/list'
 import CalendarForm from '@/components/CalendarForm.vue'
 import CalendarEventForm from '@/components/CalendarEventForm.vue'
 // const api = import.meta.env.VITE_APP_API_URL
-const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
+// const api = 'https://calendar-api-eufwfccudhaebee4.eastasia-01.azurewebsites.net/api'
 import * as bootstrap from 'bootstrap'
 import { ElMessage, ElLoading, ElMessageBox } from 'element-plus'
 export default {
@@ -252,6 +252,9 @@ export default {
 
       // START FULLCALENDAR
       calendarOptions: {
+        // validRange: {
+        //   start: new Date(),
+        // },
         datesSet: (info) => {
           this.datesSet(info)
         },
@@ -548,7 +551,7 @@ export default {
         else if (this.calendarEventGroupId != null && this.form.isRecurring == false) {
           this.title = 'Edit Recurring Event'
           this.dialog.calendarEventForm = true
-          axios.get(`${api}/CalendarEvent/${this.calendarEventId}`).then((response) => {
+          axios.get(`${this.api}/CalendarEvent/${this.calendarEventId}`).then((response) => {
             this.calendarEvent = {
               status: 'Just this one',
               calendarEventGroupId: response.data.calendarEventGroupId,
@@ -569,45 +572,47 @@ export default {
         else if (this.calendarEventGroupId != null && this.form.isRecurring == true) {
           this.title = 'Edit Recurring Event'
           this.dialog.calendarEventForm = true
-          axios.get(`${api}/CalendarEvent/${this.calendarEventGroupId}/Group`).then((response) => {
-            let dateStarted = response.data[0].dateTimeStarted.substr(0, 10)
-            let timeStarted = response.data[0].dateTimeStarted.substr(11, 19)
-            let dateEnded = response.data[response.data.length - 1].dateTimeEnded.substr(0, 10)
-            let timeEnded = response.data[response.data.length - 1].dateTimeEnded.substr(11, 19)
+          axios
+            .get(`${this.api}/CalendarEvent/${this.calendarEventGroupId}/Group`)
+            .then((response) => {
+              let dateStarted = response.data[0].dateTimeStarted.substr(0, 10)
+              let timeStarted = response.data[0].dateTimeStarted.substr(11, 19)
+              let dateEnded = response.data[response.data.length - 1].dateTimeEnded.substr(0, 10)
+              let timeEnded = response.data[response.data.length - 1].dateTimeEnded.substr(11, 19)
 
-            this.calendarEvent = {
-              status: 'series',
-              calendarEventGroupId: response.data[0].calendarEventGroupId,
-              calendarEventId: response.data[0].calendarEventId,
-              calendarId: response.data[0].calendarId,
-              eventName: response.data[0].eventName,
-              eventDescription: response.data[0].eventDescription,
-              eventColor: response.data[0].eventColor,
-              dateTimeStarted: `${dateStarted}T${timeStarted}`,
-              dateTimeEnded: `${dateEnded}T${timeEnded}`,
-              startTime: `${timeStarted}`,
-              endTime: `${timeEnded}`,
-              isRecurring: true,
-            }
-            // START RECURRING EVERY
-            const checkedDays = [false, false, false, false, false, false, false]
-            const selectedDays = []
-
-            response.data.forEach((item) => {
-              const dayOfWeek = new Date(item.dateTimeStarted).getDay()
-              if (!selectedDays.includes(dayOfWeek)) {
-                selectedDays.push(dayOfWeek)
+              this.calendarEvent = {
+                status: 'series',
+                calendarEventGroupId: response.data[0].calendarEventGroupId,
+                calendarEventId: response.data[0].calendarEventId,
+                calendarId: response.data[0].calendarId,
+                eventName: response.data[0].eventName,
+                eventDescription: response.data[0].eventDescription,
+                eventColor: response.data[0].eventColor,
+                dateTimeStarted: `${dateStarted}T${timeStarted}`,
+                dateTimeEnded: `${dateEnded}T${timeEnded}`,
+                startTime: `${timeStarted}`,
+                endTime: `${timeEnded}`,
+                isRecurring: true,
               }
-              checkedDays[dayOfWeek] = true
-            })
+              // START RECURRING EVERY
+              const checkedDays = [false, false, false, false, false, false, false]
+              const selectedDays = []
 
-            this.days.forEach((day) => {
-              day.checked = selectedDays.includes(day.value)
+              response.data.forEach((item) => {
+                const dayOfWeek = new Date(item.dateTimeStarted).getDay()
+                if (!selectedDays.includes(dayOfWeek)) {
+                  selectedDays.push(dayOfWeek)
+                }
+                checkedDays[dayOfWeek] = true
+              })
+
+              this.days.forEach((day) => {
+                day.checked = selectedDays.includes(day.value)
+              })
+              this.daysList = this.days
+              this.selectedDays = selectedDays
+              // END RECURRING EVERY
             })
-            this.daysList = this.days
-            this.selectedDays = selectedDays
-            // END RECURRING EVERY
-          })
         }
         return
       }
@@ -616,7 +621,7 @@ export default {
         if (this.form.isRecurring == false) {
           this.dialog.operation = true
           this.title = 'Edit Non-Recurring Event'
-          axios.get(`${api}/CalendarEvent/${this.calendarEventId}`).then((response) => {
+          axios.get(`${this.api}/CalendarEvent/${this.calendarEventId}`).then((response) => {
             this.calendarEvent = {
               status: 'one',
               calendarEventGroupId: response.data.calendarEventGroupId,
@@ -637,27 +642,29 @@ export default {
         // ENTIRE SERIES
         else {
           this.dialog.operation = true
-          axios.get(`${api}/CalendarEvent/${this.calendarEventGroupId}/Group`).then((response) => {
-            let dateStarted = response.data[0].dateTimeStarted.substr(0, 10)
-            let timeStarted = response.data[0].dateTimeStarted.substr(11, 19)
-            let dateEnded = response.data[response.data.length - 1].dateTimeEnded.substr(0, 10)
-            let timeEnded = response.data[response.data.length - 1].dateTimeEnded.substr(11, 19)
+          axios
+            .get(`${this.api}/CalendarEvent/${this.calendarEventGroupId}/Group`)
+            .then((response) => {
+              let dateStarted = response.data[0].dateTimeStarted.substr(0, 10)
+              let timeStarted = response.data[0].dateTimeStarted.substr(11, 19)
+              let dateEnded = response.data[response.data.length - 1].dateTimeEnded.substr(0, 10)
+              let timeEnded = response.data[response.data.length - 1].dateTimeEnded.substr(11, 19)
 
-            this.calendarEvent = {
-              status: 'series',
-              calendarEventGroupId: response.data[0].calendarEventGroupId,
-              calendarEventId: response.data[0].calendarEventId,
-              calendarId: response.data[0].calendarId,
-              eventName: response.data[0].eventName,
-              eventDescription: response.data[0].eventDescription,
-              eventColor: response.data[0].eventColor,
-              dateTimeStarted: `${dateStarted}T${timeStarted}`,
-              dateTimeEnded: `${dateEnded}T${timeEnded}`,
-              startTime: `${timeStarted}`,
-              endTime: `${timeEnded}`,
-              isRecurring: true,
-            }
-          })
+              this.calendarEvent = {
+                status: 'series',
+                calendarEventGroupId: response.data[0].calendarEventGroupId,
+                calendarEventId: response.data[0].calendarEventId,
+                calendarId: response.data[0].calendarId,
+                eventName: response.data[0].eventName,
+                eventDescription: response.data[0].eventDescription,
+                eventColor: response.data[0].eventColor,
+                dateTimeStarted: `${dateStarted}T${timeStarted}`,
+                dateTimeEnded: `${dateEnded}T${timeEnded}`,
+                startTime: `${timeStarted}`,
+                endTime: `${timeEnded}`,
+                isRecurring: true,
+              }
+            })
         }
         return
       }
@@ -691,6 +698,7 @@ export default {
 
     // CLEAR
     clear() {
+      this.dialog.operation = false
       this.dialog.calendarEventForm = false
       this.dialog.recurringEvent = false
       this.dialog.operation = false
@@ -719,7 +727,7 @@ export default {
 
     // HANDLE DATE RANGE
     handleDateRange(info) {
-      if (!this.isCalendarOwner) {
+      if (this.isCalendarOwner == false) {
         this.getCalendarEvent()
         ElMessage.warning('Only CALENDAR OWNER can edit this calendar')
         return
@@ -742,24 +750,25 @@ export default {
     getCalendarByUserId() {
       axios
         .get(
-          `${api}/Calendar/User/${this.user.userId}?currentPage=${this.calendarPagination.currentPage}&elementsPerPage=${this.calendarPagination.elementsPerPage}`,
+          `${this.api}/Calendar/User/${this.user.userId}?currentPage=${this.calendarPagination.currentPage}&elementsPerPage=${this.calendarPagination.elementsPerPage}`,
         )
         .then((response) => {
           this.calendars = response.data.results
-          if (this.user.userId == response.data.results[0].userId) {
-            this.isCalendarOwner = true
-          } else {
-            this.isCalendarOwner = false
-          }
           this.form.calendarId = response.data.results[0].calendarId
           this.calendarPagination.totalElements = response.data.totalElements
+          if (this.calendars.length == 1) {
+            this.calendarApi.addEventSource(this.calendarOptions.events) // Prevent glitch
+            this.calendarApi.removeAllEvents() // Clear all events if no data
+            this.calendarApi.refetchEvents() // Refetch to clear the calendar
+            this.calendarEvents = []
+          }
         })
     },
 
     getSharedCalendarByUserId() {
       axios
         .get(
-          `${api}/SharedCalendar/User/${this.user.userId}?currentPage=${this.calendarPagination.currentPage}&elementsPerPage=${this.calendarPagination.elementsPerPage}`,
+          `${this.api}/SharedCalendar/User/${this.user.userId}?currentPage=${this.calendarPagination.currentPage}&elementsPerPage=${this.calendarPagination.elementsPerPage}`,
         )
         .then((response) => {
           if (this.user.userId == response.data.results[0].ownerUserId) {
@@ -768,6 +777,10 @@ export default {
             this.isCalendarOwner = false
           }
           this.sharedCalendars = response.data.results
+
+          if (this.calendars.length == 0) {
+            this.form.calendarId = response.data.results[0].calendarId
+          }
         })
     },
 
@@ -781,7 +794,7 @@ export default {
       setTimeout(() => {
         axios
           .get(
-            `${api}/CalendarEvent/Calendar/${this.form.calendarId}?dateTimeStarted=${this.currentStartDateTime}&dateTimeEnded=${this.currentEndDateTime}`,
+            `${this.api}/CalendarEvent/Calendar/${this.form.calendarId}?dateTimeStarted=${this.currentStartDateTime}&dateTimeEnded=${this.currentEndDateTime}`,
           )
           .then((response) => {
             this.calendarEvents = response.data.filter(
@@ -827,6 +840,17 @@ export default {
             this.clear()
             this.dialog.operation = false
             this.isErrorFullCalendar = false
+            if (response.data.length == 0) {
+              this.isCalendarOwner = true
+              this.calendarApi.addEventSource(this.calendarOptions.events) // Prevent glitch
+              this.calendarApi.removeAllEvents() // Clear all events if no data
+              this.calendarApi.refetchEvents() // Refetch to clear the calendar
+              this.calendarEvents = []
+            } else if (response.data[0].userId == this.user.userId) {
+              this.isCalendarOwner = true
+            } else {
+              this.isCalendarOwner = false
+            }
           })
           .catch(() => {
             this.isErrorFullCalendar = true
@@ -834,18 +858,15 @@ export default {
           })
       }, 1000)
     },
+
     // EVENT CLICK
     eventClick(info) {
-      // if (this.user.userId != info.event.extendedProps.userId) {
-      // } else {
-      // }
-
       this.calendarEventId = info.event.id
       this.calendarEventGroupId = info.event.extendedProps.calendarEventGroupId
       // NON-RECURRING
       if (info.event.extendedProps.calendarEventGroupId == null) {
         this.dialog.operation = true
-        axios.get(`${api}/CalendarEvent/${this.calendarEventId}`).then((response) => {
+        axios.get(`${this.api}/CalendarEvent/${this.calendarEventId}`).then((response) => {
           this.calendarEvent = {
             calendarEventGroupId: response.data.calendarEventGroupId,
             calendarEventId: response.data.calendarEventId,
@@ -878,12 +899,14 @@ export default {
         })
           // CONFIRM
           .then(() => {
-            axios.delete(`${api}/CalendarEvent/${this.calendarEventGroupId}/Group`).then(() => {
-              this.dialog.operation = false
-              this.getCalendarEvent()
-              this.clear()
-              ElMessage.success('Event deleted successfully')
-            })
+            axios
+              .delete(`${this.api}/CalendarEvent/${this.calendarEventGroupId}/Group`)
+              .then(() => {
+                this.dialog.operation = false
+                this.getCalendarEvent()
+                this.clear()
+                ElMessage.success('Event deleted successfully')
+              })
           })
           // CANCEL
           .catch(() => {})
@@ -901,7 +924,7 @@ export default {
         })
           // CONFIRM
           .then(() => {
-            axios.delete(`${api}/CalendarEvent/${this.calendarEventId}`).then(() => {
+            axios.delete(`${this.api}/CalendarEvent/${this.calendarEventId}`).then(() => {
               this.dialog.operation = false
               this.getCalendarEvent()
               this.clear()
@@ -915,7 +938,7 @@ export default {
     },
     // MOVE / RESIZE EVENT
     moveResizeEvent(info) {
-      if (!this.isCalendarOwner) {
+      if (this.isCalendarOwner == false) {
         this.getCalendarEvent()
         ElMessage.warning('Only CALENDAR OWNER can edit this calendar')
       } else {
@@ -949,7 +972,7 @@ export default {
           // CONFIRM
           .then(() => {
             axios
-              .put(`${api}/CalendarEvent/${calendarEventId}`, payload)
+              .put(`${this.api}/CalendarEvent/${calendarEventId}`, payload)
               .then(() => {
                 ElMessage.success('Event updated successfully')
                 this.getCalendarByUserId()
@@ -1013,6 +1036,12 @@ export default {
 </script>
 
 <style>
+a {
+  text-decoration: none;
+}
+.fc-toolbar-title {
+  text-align: center;
+}
 .fullCalendar {
   text-decoration: none;
   color: #000000;
@@ -1042,5 +1071,89 @@ export default {
 .fc-createEvent-button {
   background-color: #409eff !important;
   border: 1px #409eff solid !important;
+}
+
+main {
+  position: relative;
+}
+
+@media only screen and (max-width: 1050px) {
+  .fc-createEvent-button {
+    position: absolute;
+    top: 0;
+    right: 20px;
+  }
+
+  .fc-header-toolbar {
+    margin: 20px 0 0 0;
+  }
+}
+@media only screen and (max-width: 800px) {
+  .select_event {
+    text-align: center;
+  }
+  .fc-header-toolbar {
+    padding: 0 0 80px 0;
+    margin: 0;
+  }
+  .el-container {
+    display: flex;
+    flex-direction: column;
+  }
+  .el-aside {
+    width: 100%;
+    margin: 0 auto;
+  }
+  .fc-toolbar-title {
+    position: absolute;
+    left: 0;
+    right: 0;
+  }
+  .fc-createEvent-button {
+    position: absolute;
+    right: 20px;
+    top: 84px;
+  }
+  .fc .fc-button-group {
+    display: inline-block;
+  }
+  .fc-button-group {
+    margin: 0 auto !important;
+    position: absolute !important;
+    bottom: -20px !important;
+  }
+  .fc-button-group:nth-child(1) {
+    left: 20px;
+  }
+  .fc-button-group:nth-child(2) {
+    right: 20px;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .fc .fc-button-group {
+    display: block;
+  }
+  .fc-button-group {
+    right: 0 !important;
+    left: 20px !important;
+    margin: 0 auto !important;
+    position: absolute !important;
+  }
+  .fc-button-group:nth-child(1) {
+    bottom: -25px !important;
+  }
+  .fc-button-group:nth-child(2) {
+    bottom: -70px !important;
+  }
+}
+
+@media only screen and (max-width: 336px) {
+  .fc-header-toolbar {
+    padding: 0 0 100px 0;
+  }
+  .fc-createEvent-button {
+    top: 100px;
+  }
 }
 </style>
